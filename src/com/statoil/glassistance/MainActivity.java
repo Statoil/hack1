@@ -130,7 +130,8 @@ public class MainActivity extends Activity {
 					+ Base64.encode(theQuestion, Base64.DEFAULT) + "\"}");
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Log.e(this.getClass().getName(), e1.getMessage(), e1);
+			return; 
 		}
 
 		try {
