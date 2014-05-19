@@ -21,20 +21,28 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
 
 public class MainActivity extends Activity {
-
+    private static final String TAG = "Glassistance";
     private GestureDetector gestureDetector;
 	private Camera camera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setContentView(R.layout.hilfe);
 
+        setupGestures();
+    }
+
+    private void setupGestures() {
         gestureDetector = new GestureDetector(this);
         gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
             @Override
@@ -56,7 +64,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onPictureTaken(byte[] data, Camera camera) {
 				// TODO Auto-generated method stub
-				Log.d(this.getClass().getName(), "VI ER KOMMET HERTIL");
+				Log.d(TAG, "VI ER KOMMET HERTIL");
 				
 			}
 		});
