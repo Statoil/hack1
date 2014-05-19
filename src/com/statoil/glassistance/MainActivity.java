@@ -1,12 +1,22 @@
 package com.statoil.glassistance;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.logging.Logger;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -34,6 +44,7 @@ public class MainActivity extends Activity {
                         startCamera();
                         return true;
                     case TWO_TAP:
+                    	
                     	
                 }
                 return false;
@@ -68,4 +79,55 @@ public class MainActivity extends Activity {
     	
     }
 
+    void postQuestion(byte[] theQuestion) {
+    	try {
+    		HttpClient httpclient = new DefaultHttpClient();
+    		URI url = URI.create("http://hackathon1.azurewebsites.net/api/image");
+    		
+    	} catch (Exception e) {
+			Log.d("InputStream", e.getLocalizedMessage());
+		}
+    }
+    byte[] getAnswer() {
+		InputStream inputStream = null;
+		String resultAsString = "";
+		byte[] pic;
+		try {
+
+			// create HttpClient
+			HttpClient httpclient = new DefaultHttpClient();
+
+			URI url = URI.create("http://hackathon1.azurewebsites.net/api/image");
+			// make GET request to the given URL
+			HttpResponse httpResponse = httpclient.execute(new HttpGet(url ));
+
+			// receive response as inputStream
+			inputStream = httpResponse.getEntity().getContent();
+
+			// convert inputstream to string
+			if (inputStream != null) {
+				resultAsString = convertInputStreamToString(inputStream);
+				Log.e("Jepp", resultAsString);
+				pic = Base64.decode(resultAsString, Base64.DEFAULT);
+			    return pic;
+			}
+			else
+				resultAsString = "Did not work!";
+		    
+		} catch (Exception e) {
+			Log.d("InputStream", e.getLocalizedMessage());
+		}
+		return null;
+	}
+	 
+    private static String convertInputStreamToString(InputStream inputStream) throws IOException{
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        String line = "";
+        String result = "";
+        while((line = bufferedReader.readLine()) != null)
+            result += line;
+ 
+        inputStream.close();
+        return result;
+    }
 }
