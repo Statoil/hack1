@@ -33,15 +33,29 @@ public class MainActivity extends Activity {
                     case TAP:
                         startCamera();
                         return true;
-                    case TWO_TAP:
-                    	
+//                    case TWO_TAP:
+//                    	 takePicture();
+//                    	 return true;
                 }
                 return false;
             }
         });
     }
 
-    @Override
+    protected void takePicture() {
+		// TODO Auto-generated method stub
+		camera.takePicture(null, null, null, new Camera.PictureCallback() {
+			
+			@Override
+			public void onPictureTaken(byte[] data, Camera camera) {
+				// TODO Auto-generated method stub
+				Log.d(this.getClass().getName(), "VI ER KOMMET HERTIL");
+				
+			}
+		});
+	}
+
+	@Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return gestureDetector.onMotionEvent(event);
     }
@@ -59,6 +73,7 @@ public class MainActivity extends Activity {
         camera.startPreview();
     }
     
+       
     @Override
     protected void onStop() {
     	if (camera != null)
