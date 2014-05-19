@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
 
     void startCamera() {
         camera = Camera.open();
-
+        text.setText("Swipe back to take a picture!");
         try {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surface_view);
             camera.setPreviewDisplay(surfaceView.getHolder());
