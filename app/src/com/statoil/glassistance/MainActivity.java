@@ -22,11 +22,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -43,6 +49,8 @@ public class MainActivity extends Activity {
 	private GestureDetector gestureDetector;
 	private Camera camera;
 	private TextView text;
+	private AsyncHttpClient httpclient;
+	private SurfaceView surfaceView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +61,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.hilfe);
 
 		text = (TextView) findViewById(R.id.bottom_text);
+		
+		surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+		
+		httpclient = new AsyncHttpClient();
 
 		setupGestures();
 	}
@@ -69,6 +81,10 @@ public class MainActivity extends Activity {
 				case SWIPE_LEFT:
 					takePicture();
 					return true;
+				case SWIPE_RIGHT:
+					releaseCamera();
+					getAnswer();
+					return true;
 				}
 				return false;
 			}
@@ -82,7 +98,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onPictureTaken(byte[] data, Camera camera) {
 				releaseCamera();
-				text.setText("Jolly good!");
+				text.setText("Sending picture!");
 				postQuestionAsJson(data);
 
 			}
@@ -98,7 +114,6 @@ public class MainActivity extends Activity {
 		camera = Camera.open();
 		text.setText("Swipe back to take a picture!");
 		try {
-			SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surface_view);
 			camera.setPreviewDisplay(surfaceView.getHolder());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -130,7 +145,7 @@ public class MainActivity extends Activity {
 
 	void postQuestionAsJson(byte[] theQuestion) {
 		try {
-			AsyncHttpClient httpclient = new AsyncHttpClient();
+			
 			HttpEntity entity = new StringEntity("\"" + Base64.encodeToString(theQuestion, Base64.DEFAULT) + "\"");
 			httpclient.post(getBaseContext(), API_URL, entity, "application/json", new PostResponseHandler());
 		} catch (UnsupportedEncodingException e) {
@@ -148,50 +163,37 @@ public class MainActivity extends Activity {
 				"application/json", new PostResponseHandler());
 	}
 
-	byte[] getAnswer() {
-		InputStream inputStream = null;
-		String resultAsString = "";
-		byte[] pic;
-		try {
+	void getAnswer() {
+		httpclient.get(API_URL, new AnswerResponseHandler());
+	}
 
-			// create HttpClient
-			HttpClient httpclient = new DefaultHttpClient();
+	private final class AnswerResponseHandler extends
+			AsyncHttpResponseHandler {
+		@Override
+		public void onSuccess(String content) {
+			String unfnutted = content.substring(1,  content.length() - 1);
+			byte[] bytes = Base64.decode(unfnutted, Base64.DEFAULT);
 
-			URI url = URI.create(API_URL);
-			// make GET request to the given URL
-			HttpResponse httpResponse = httpclient.execute(new HttpGet(url));
-
-			// receive response as inputStream
-			inputStream = httpResponse.getEntity().getContent();
-
-			// convert inputstream to string
-			if (inputStream != null) {
-				resultAsString = convertInputStreamToString(inputStream);
-				Log.e("Jepp", resultAsString);
-				pic = Base64.decode(resultAsString, Base64.DEFAULT);
-				return pic;
-			} else
-				resultAsString = "Did not work!";
-
-		} catch (Exception e) {
-			Log.d("InputStream", e.getLocalizedMessage());
+			Bitmap img = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes));
+		
+			SurfaceHolder holder = surfaceView.getHolder();
+			Canvas canvas = holder.lockCanvas();
+			
+			canvas.drawBitmap(img, 0, 0, new Paint());
+			surfaceView.draw(canvas);
+			holder.unlockCanvasAndPost(canvas);
+			
+			text.setText("Help is here!");
 		}
-		return null;
+		
+		@Override
+		public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+				Throwable arg3) {
+			text.setText("Oh no!");
+			text.setTextColor(Color.RED);
+		}
 	}
 
-	private static String convertInputStreamToString(InputStream inputStream)
-			throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(inputStream));
-		String line = "";
-		String result = "";
-		while ((line = bufferedReader.readLine()) != null)
-			result += line;
-
-		inputStream.close();
-		return result;
-	}
-	
 	private final class PostResponseHandler extends AsyncHttpResponseHandler {
 		@Override
 		public void onSuccess(String content) {
