@@ -5,21 +5,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -119,14 +122,40 @@ public class MainActivity extends Activity {
     }
 
     void postQuestion(byte[] theQuestion) {
-    	try {
-    		HttpClient httpclient = new DefaultHttpClient();
-    		URI url = URI.create("http://hackathon1.azurewebsites.net/api/image");
-    		
-    	} catch (Exception e) {
-			Log.d("InputStream", e.getLocalizedMessage());
+		// Create a new HttpClient and Post Header
+		HttpClient httpclient = new DefaultHttpClient();
+		JSONObject json = null;
+		try {
+			json = new JSONObject("{ \"value:\"" + "\""
+					+ Base64.encode(theQuestion, Base64.DEFAULT) + "\"}");
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-    }
+
+		try {
+
+			HttpPost httppost = new HttpPost(
+					"http://hackathon1.azurewebsites.net/api/image");
+			StringEntity se;
+			se = new StringEntity(json.toString());
+
+			// Set HTTP parameters
+			httppost.setEntity(se);
+			httppost.setHeader("Content-Type", "application/json");
+
+			HttpResponse response = httpclient.execute(httppost);
+			String temp = EntityUtils.toString(response.getEntity());
+			Log.i("tag", temp);
+
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
     byte[] getAnswer() {
 		InputStream inputStream = null;
 		String resultAsString = "";
