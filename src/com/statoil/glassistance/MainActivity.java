@@ -18,6 +18,7 @@ import com.google.android.glass.touchpad.GestureDetector;
 public class MainActivity extends Activity {
 
     private GestureDetector gestureDetector;
+	private Camera camera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,8 @@ public class MainActivity extends Activity {
                     case TAP:
                         startCamera();
                         return true;
+                    case TWO_TAP:
+                    	
                 }
                 return false;
             }
@@ -44,13 +47,7 @@ public class MainActivity extends Activity {
     }
 
     void startCamera() {
-        CameraInfo info = new CameraInfo();
-        Camera.getCameraInfo(0, info);
-        if (info.facing == CameraInfo.CAMERA_FACING_FRONT) {
-            Log.d("Nils", "Camera found");
-        }
-
-        Camera camera = Camera.open();
+        camera = Camera.open();
 
         try {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surface_view);
@@ -60,6 +57,15 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         camera.startPreview();
+    }
+    
+    @Override
+    protected void onStop() {
+    	if (camera != null)
+    		camera.stopPreview();
+    	
+    	super.onStop();
+    	
     }
 
 }
