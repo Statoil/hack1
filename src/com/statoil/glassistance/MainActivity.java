@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
@@ -30,6 +31,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "Glassistance";
     private GestureDetector gestureDetector;
 	private Camera camera;
+	private TextView text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,8 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.hilfe);
+        
+        text = (TextView) findViewById(R.id.bottom_text);
 
         setupGestures();
     }
@@ -51,6 +55,9 @@ public class MainActivity extends Activity {
                     case TAP:
                         startCamera();
                         return true;
+                    case SWIPE_LEFT:
+                        takePicture();
+                        return true;
                 }
                 return false;
             }
@@ -63,8 +70,9 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onPictureTaken(byte[] data, Camera camera) {
-				// TODO Auto-generated method stub
-				Log.d(TAG, "VI ER KOMMET HERTIL");
+				releaseCamera();
+				text.setText("Jolly good!");
+				postQuestion(data);
 				
 			}
 		});
