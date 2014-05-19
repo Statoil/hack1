@@ -91,11 +91,23 @@ public class MainActivity extends Activity {
        
     @Override
     protected void onStop() {
-    	if (camera != null)
-    		camera.stopPreview();
-    	
+    	releaseCamera();
     	super.onStop();
     	
+    }
+    
+    @Override
+    protected void onPause() {
+    	releaseCamera();
+    	super.onPause();
+    }
+    
+    void releaseCamera() {
+    	if(camera != null) {
+    		camera.stopPreview();
+    		camera.release();
+    		camera = null;
+    	}
     }
 
     void postQuestion(byte[] theQuestion) {
