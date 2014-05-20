@@ -9,21 +9,20 @@
     <RelativeLayout
         android:id="@+id/body_layout"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/glass_card_body_height"
+        android:layout_height="match_parent"
         android:layout_marginLeft="@dimen/glass_card_margin"
         android:layout_marginTop="@dimen/glass_card_margin"
         android:layout_marginRight="@dimen/glass_card_margin"
         >
+        <SurfaceView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/surface_view"/>
         
         <SurfaceView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/surface_view_answer"/>
-        
-        <SurfaceView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/surface_view"/>
 
         <TextView
             android:layout_width="wrap_content"

@@ -56,8 +56,8 @@ public class MainActivity extends Activity {
 	private Camera camera;
 	private TextView text;
 	private AsyncHttpClient httpclient;
-	private SurfaceView surfaceView;
-	private SurfaceView surfaceViewResponse;
+	private SurfaceView cameraView;
+	private SurfaceView responseView;
 	private Paint paint;
 
 	@Override
@@ -70,14 +70,16 @@ public class MainActivity extends Activity {
 
 		text = (TextView) findViewById(R.id.bottom_text);
 		
-		surfaceView = (SurfaceView) findViewById(R.id.surface_view);
-		surfaceViewResponse = (SurfaceView) findViewById(R.id.surface_view_answer);
+		cameraView = (SurfaceView) findViewById(R.id.surface_view);
+		responseView = (SurfaceView) findViewById(R.id.surface_view_answer);
 		
 		httpclient = new AsyncHttpClient();
 		
 		paint = new Paint();
 		paint.setColor(0xFFFFFFFF);
 	    paint.setStyle(Style.STROKE);
+	    
+	    setView(ViewType.CAMERA);
 
 		setupGestures();
 	}
@@ -111,7 +113,6 @@ public class MainActivity extends Activity {
 				releaseCamera();
 				text.setText("Sending picture!");
 				postQuestionAsJson(data);
-
 			}
 		});
 	}
@@ -122,14 +123,13 @@ public class MainActivity extends Activity {
 	}
 
 	void startCamera() {
-		surfaceView.setVisibility(View.VISIBLE);
-		surfaceViewResponse.setVisibility(View.INVISIBLE);
+		setView(ViewType.CAMERA);
 		
 		camera = Camera.open();
 		
 		text.setText("Swipe back to take a picture!");
 		try {
-			camera.setPreviewDisplay(surfaceView.getHolder());
+			camera.setPreviewDisplay(cameraView.getHolder());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -148,6 +148,23 @@ public class MainActivity extends Activity {
 		releaseCamera();
 		super.onPause();
 	}
+	
+	enum ViewType {
+		CAMERA, RESPONSE;
+	}
+
+	private void setView(ViewType type) {
+		switch (type) {
+		case CAMERA:
+			cameraView.setVisibility(View.VISIBLE);
+			responseView.setVisibility(View.INVISIBLE);
+			break;
+		case RESPONSE:
+			cameraView.setVisibility(View.INVISIBLE);
+			responseView.setVisibility(View.VISIBLE);
+			break;
+		}
+	}
 
 	void releaseCamera() {
 		if (camera != null) {
@@ -156,8 +173,6 @@ public class MainActivity extends Activity {
 			camera = null;
 		}
 		
-		surfaceView.setVisibility(View.INVISIBLE);
-		surfaceViewResponse.setVisibility(View.VISIBLE);
 	}
 
 	void postQuestionAsJson(byte[] theQuestion) {
@@ -188,7 +203,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void onSuccess(int statusCode, Header[] headers, byte[] bytes) {
 			final Bitmap img = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes));
-			paintBitmap(img, surfaceViewResponse);
+			paintBitmap(img, responseView);
 			text.setText("Help is here!");
 		}
 		
@@ -213,25 +228,15 @@ public class MainActivity extends Activity {
 	}
 
 	public void paintBitmap(final Bitmap img, final SurfaceView surface) {
+		setView(ViewType.RESPONSE);
 		final SurfaceHolder holder = surface.getHolder();
 		final Canvas canvas = holder.lockCanvas();
 		canvas.drawColor(Color.BLACK);
-		canvas.drawBitmap(img, 0, 0, null);
+		Bitmap scaled = Bitmap.createScaledBitmap(img, canvas.getWidth(), canvas.getHeight(), true);
+		canvas.drawBitmap(scaled, 0, 0, null);
 		
 		holder.unlockCanvasAndPost(canvas);
 		Log.d(TAG, "Painted surface");
-		
-//		AsyncTask task = new AsyncTask() {
-//			@Override
-//			protected Object doInBackground(Object... params) {
-//				
-//				while (true) {
-//					
-//				}
-//			}
-//
-//		};
-//		task.execute();
 
 	}
 	
