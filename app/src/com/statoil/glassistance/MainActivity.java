@@ -27,12 +27,17 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.hardware.Camera;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.transition.Visibility;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -45,12 +50,15 @@ import com.loopj.android.http.RequestParams;
 
 public class MainActivity extends Activity {
 	private static final String API_URL = "http://hackathon1.azurewebsites.net/api/image";
+	private static final String API_URL_RESPONSE = "http://hackathon1.azurewebsites.net/image.aspx";
 	private static final String TAG = "Glassistance";
 	private GestureDetector gestureDetector;
 	private Camera camera;
 	private TextView text;
 	private AsyncHttpClient httpclient;
 	private SurfaceView surfaceView;
+	private SurfaceView surfaceViewResponse;
+	private Paint paint;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +71,13 @@ public class MainActivity extends Activity {
 		text = (TextView) findViewById(R.id.bottom_text);
 		
 		surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+		surfaceViewResponse = (SurfaceView) findViewById(R.id.surface_view_answer);
 		
 		httpclient = new AsyncHttpClient();
+		
+		paint = new Paint();
+		paint.setColor(0xFFFFFFFF);
+	    paint.setStyle(Style.STROKE);
 
 		setupGestures();
 	}
@@ -92,9 +105,7 @@ public class MainActivity extends Activity {
 	}
 
 	protected void takePicture() {
-		// TODO Auto-generated method stub
 		camera.takePicture(null, null, null, new Camera.PictureCallback() {
-
 			@Override
 			public void onPictureTaken(byte[] data, Camera camera) {
 				releaseCamera();
@@ -111,7 +122,11 @@ public class MainActivity extends Activity {
 	}
 
 	void startCamera() {
+		surfaceView.setVisibility(View.VISIBLE);
+		surfaceViewResponse.setVisibility(View.INVISIBLE);
+		
 		camera = Camera.open();
+		
 		text.setText("Swipe back to take a picture!");
 		try {
 			camera.setPreviewDisplay(surfaceView.getHolder());
@@ -126,7 +141,6 @@ public class MainActivity extends Activity {
 	protected void onStop() {
 		releaseCamera();
 		super.onStop();
-
 	}
 
 	@Override
@@ -141,11 +155,13 @@ public class MainActivity extends Activity {
 			camera.release();
 			camera = null;
 		}
+		
+		surfaceView.setVisibility(View.INVISIBLE);
+		surfaceViewResponse.setVisibility(View.VISIBLE);
 	}
 
 	void postQuestionAsJson(byte[] theQuestion) {
 		try {
-			
 			HttpEntity entity = new StringEntity("\"" + Base64.encodeToString(theQuestion, Base64.DEFAULT) + "\"");
 			httpclient.post(getBaseContext(), API_URL, entity, "application/json", new PostResponseHandler());
 		} catch (UnsupportedEncodingException e) {
@@ -164,25 +180,15 @@ public class MainActivity extends Activity {
 	}
 
 	void getAnswer() {
-		httpclient.get(API_URL, new AnswerResponseHandler());
+		httpclient.get(API_URL_RESPONSE, new AnswerResponseHandler());
 	}
 
 	private final class AnswerResponseHandler extends
 			AsyncHttpResponseHandler {
 		@Override
-		public void onSuccess(String content) {
-			String unfnutted = content.substring(1,  content.length() - 1);
-			byte[] bytes = Base64.decode(unfnutted, Base64.DEFAULT);
-
-			Bitmap img = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes));
-		
-			SurfaceHolder holder = surfaceView.getHolder();
-			Canvas canvas = holder.lockCanvas();
-			
-			canvas.drawBitmap(img, 0, 0, new Paint());
-			surfaceView.draw(canvas);
-			holder.unlockCanvasAndPost(canvas);
-			
+		public void onSuccess(int statusCode, Header[] headers, byte[] bytes) {
+			final Bitmap img = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes));
+			paintBitmap(img, surfaceViewResponse);
 			text.setText("Help is here!");
 		}
 		
@@ -205,4 +211,29 @@ public class MainActivity extends Activity {
 			text.setText("Epic fail");
 		}
 	}
+
+	public void paintBitmap(final Bitmap img, final SurfaceView surface) {
+		final SurfaceHolder holder = surface.getHolder();
+		final Canvas canvas = holder.lockCanvas();
+		canvas.drawColor(Color.BLACK);
+		canvas.drawBitmap(img, 0, 0, null);
+		
+		holder.unlockCanvasAndPost(canvas);
+		Log.d(TAG, "Painted surface");
+		
+//		AsyncTask task = new AsyncTask() {
+//			@Override
+//			protected Object doInBackground(Object... params) {
+//				
+//				while (true) {
+//					
+//				}
+//			}
+//
+//		};
+//		task.execute();
+
+	}
+	
+	
 }
