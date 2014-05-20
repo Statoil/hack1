@@ -38,7 +38,7 @@ var canvas, ctx, flag = false,
     dot_flag = false;
 
 var x = "black",
-    y = 2;
+    y = 10;
 
 function init() {
     console.log("Fisk");
@@ -71,35 +71,6 @@ function init() {
     }
 }
 
-function color(obj) {
-    switch (obj.id) {
-        case "green":
-            x = "green";
-            break;
-        case "blue":
-            x = "blue";
-            break;
-        case "red":
-            x = "red";
-            break;
-        case "yellow":
-            x = "yellow";
-            break;
-        case "orange":
-            x = "orange";
-            break;
-        case "black":
-            x = "black";
-            break;
-        case "white":
-            x = "white";
-            break;
-    }
-    if (x == "white") y = 14;
-    else y = 2;
-
-}
-
 function draw() {
     ctx.beginPath();
     ctx.moveTo(prevX, prevY);
@@ -114,11 +85,6 @@ function save() {
 
 
     var drawCanvas = document.getElementById('can');
-    console.log(drawCanvas);
-    
-    var thectx = drawCanvas.getContext("2d");
-    var image = thectx.getImageData(0,0,1296,972);
-    console.log(image);
     var datagreier =  '"' + drawCanvas.toDataURL("image/jpeg").split(',')[1] + '"';
 
     $.ajax({
