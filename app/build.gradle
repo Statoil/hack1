@@ -24,6 +24,10 @@ android {
 		minSdkVersion 19
 		targetSdkVersion 19
 	}
+
+    dependencies {
+        compile fileTree(dir: 'libs', include: '*.jar')
+    }
 }
 
 repositories {
