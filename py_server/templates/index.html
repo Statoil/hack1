@@ -57,7 +57,7 @@ function init() {
     function make_base()
     {
         base_image = new Image();
-        base_image.src = '/image.png';
+        base_image.src = '/image.jpg';
         base_image.onload = function(){
             ctx.drawImage(base_image, 0, 0);
         }
@@ -83,7 +83,7 @@ function save() {
 
     $.ajax({
         type: 'POST',
-        url: '/image.png',
+        url: '/image.jpg',
         data: datagreier,
         contentType: 'application/json',
         dataType: 'json',
