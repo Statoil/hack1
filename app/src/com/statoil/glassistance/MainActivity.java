@@ -49,8 +49,8 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 public class MainActivity extends Activity {
-	private static final String API_URL = "http://hackathon1.azurewebsites.net/api/image";
-	private static final String API_URL_RESPONSE = "http://hackathon1.azurewebsites.net/image.aspx";
+	private static final String API_URL = "http://glassistance.herokuapp.com/image.jpg";
+	private static final String API_URL_RESPONSE = "http://glassistance.herokuapp.com/image.jpg";
 	private static final String TAG = "Glassistance";
 	private GestureDetector gestureDetector;
 	private Camera camera;
@@ -218,12 +218,12 @@ public class MainActivity extends Activity {
 	private final class PostResponseHandler extends AsyncHttpResponseHandler {
 		@Override
 		public void onSuccess(String content) {
-			text.setText("Great success!");
+			text.setText("Swipe forward for response");
 		}
 		
 		@Override
 		public void onFailure(int statusCode, Throwable error, String content) {
-			text.setText("Epic fail");
+			text.setText("Connection error");
 		}
 	}
 
